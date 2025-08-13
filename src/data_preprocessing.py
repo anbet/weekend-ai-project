@@ -35,11 +35,13 @@ class TextPreprocessor:
     def get_sentiment_textblob(self, text):
         """ Get sentiment using TextBlob"""
         blob = TextBlob(text)
+        polarity = blob.sentiment.polarity # type: ignore
+        subjectivity = blob.sentiment.subjectivity # type: ignore
         sentiment = {
-            'polarity': blob.sentiment.polarity,
-            'subjectivity': blob.sentiment.subjectivity,
-            'sentiment': 'Positive' if blob.sentiment.polarity > 0.1
-                        else 'Negative' if blob.sentiment.polarity < -0.1
+            'polarity': polarity,
+            'subjectivity': subjectivity,
+            'sentiment': 'Positive' if polarity > 0.1
+                        else 'Negative' if polarity < -0.1
                         else 'Neutral'
         }
         return sentiment
