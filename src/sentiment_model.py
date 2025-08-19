@@ -46,14 +46,14 @@ class SentimentAnalyzer:
         X = df['text']
         y = df['sentiment']
 
-        # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Split the data into training and testing sets with stratification to preserve class distribution
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42, stratify=y)
 
         # Define the models
         models = {
-            'Logistic Regression': LogisticRegression(random_state=42),
+            'Logistic Regression': LogisticRegression(random_state=42, multi_class='auto', max_iter=1000),
             'Naive Bayes': MultinomialNB(),
-            'svm': SVC(kernel='linear', random_state=42)
+            'svm': SVC(kernel='linear', random_state=42, probability=True)
         }
 
         best_score = 0
@@ -114,7 +114,7 @@ class SentimentAnalyzer:
             response = ollama.generate(model=model_name, prompt=prompt)
 
             # Ensure the sentiment is one of the expected values
-            sentiment = response['text'].strip().lower()
+            sentiment = response['response'].strip().lower()
             if sentiment not in ['positive', 'negative', 'neutral']:
                 sentiment = 'neutral'  # Default to neutral if unexpected response
 
@@ -126,6 +126,7 @@ class SentimentAnalyzer:
         
         except Exception as e:
             print(f"Error during Ollama prediction: {e}")
+            ollama.generate(model="llama3", prompt="Hello")
             return {
                 'sentiment': 'neutral',
                 'model': model_name,
