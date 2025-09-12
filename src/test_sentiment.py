@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.data_preprocessing import TextPreprocessor
 from src.sentiment_model import SentimentAnalyzer
+from src.parameter_tuning import (tune_hyperparameters, get_best_model) 
 
 # Initialisation of the preprocessor and sentiment analyzer
 preprocessor = TextPreprocessor()
@@ -30,3 +31,15 @@ for text in sample_texts:
     print(f"Ollama Model Prediction: {ollama_result}")
     print("-" * 50)
 
+# Tune parameters and test again
+best_models = tune_hyperparameters(df.text, df.sentiment)
+best_model = get_best_model(best_models)
+print(f"Best Model after Tuning: {best_model}")
+
+# Print sentiment analysis results
+for text in sample_texts:
+    local_result = sentiment_analyzer.predict_sentimental_local(text, best_model)
+    print("-" * 50)
+    print(f"Text: {text}")
+    print(f"Best Local Model Prediction: {local_result}")
+    print("-" * 50)

@@ -12,7 +12,7 @@ from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
-import requests
+from datasets import load_dataset
 import ollama
 
 class SentimentAnalyzer:
@@ -23,23 +23,52 @@ class SentimentAnalyzer:
 
     def load_sample_data(self):
         """ Load sample data for training """
-        sample_data = {
-            'text': [
-                'I love this product, it works perfectly!',
-                'This is terrible, waste of money',
-                'Average product, nothing special',
-                'Excellent quality, highly recommend',
-                'Poor customer service, very disappointed',
-                'Good value for money',
-                'Not what I expected, could be better',
-                'Amazing experience, will buy again',
-                'Decent product, meets expectations',
-                'Horrible quality, avoid this'
-            ],
-            'sentiment': ['positive', 'negative', 'neutral', 'positive', 'negative', 
-                         'positive', 'negative', 'positive', 'neutral', 'negative']
+        positive = [
+        "I love this product, it works perfectly!",
+        "Excellent quality, highly recommend",
+        "Good value for money",
+        "Amazing experience, will buy again",
+        "Great support team, very helpful",
+        "Loved the packaging, very premium",
+        "Fast delivery and excellent service",
+        "Absolutely fantastic, exceeded expectations",
+        "Very satisfied with the purchase",
+        "Works like a charm, totally worth it",
+        ]
+        
+        negative = [
+            "This is terrible, waste of money",
+            "Poor customer service, very disappointed",
+            "Not what I expected, could be better",
+            "Horrible quality, avoid this",
+            "Worst experience ever, never again",
+            "Totally useless, don’t buy this",
+            "Extremely frustrating and disappointing",
+            "Cheap build quality, broke in a week",
+            "Waste of time and money",
+            "Support team never responds, awful",
+        ]
+        
+        neutral = [
+            "Average product, nothing special",
+            "Decent product, meets expectations",
+            "Just okay, nothing impressive",
+            "It’s fine, does the job",
+            "Neither good nor bad, just average",
+            "Quality is acceptable for the price",
+            "Not amazing but not terrible either",
+            "Satisfactory but nothing exceptional",
+            "Okay for temporary use",
+            "Serves the purpose, nothing more",
+        ]
+        
+        data = {
+            "text": positive + negative + neutral,
+            "sentiment": (["positive"] * len(positive)) + 
+                        (["negative"] * len(negative)) + 
+                        (["neutral"] * len(neutral))
         }
-        return pd.DataFrame(sample_data)
+        return pd.DataFrame(data)
     
     def train_models(self, df):
         """ Train multiple models on the dataset """
@@ -86,10 +115,17 @@ class SentimentAnalyzer:
 
         return self.best_model
 
-    def predict_sentimental_local(self, text):
+    def predict_sentimental_local(self, text, model_name=None):
         """ Predict sentiment using the best local model """
-        if not self.best_model:
-            raise ValueError("No model trained yet. Please train the model first.")
+        # if model_name:
+        #     # Get model names from self.models
+
+        #     if model_name not in self.models:
+        #         raise ValueError(f"Model {model_name} not found. Available models: {list(self.models.keys())}")
+        #     self.best_model = self.models[model_name]
+
+        if self.best_model is None:
+            raise ValueError("No model trained yet. Please train or load the model first.")
         
         prediction = self.best_model.predict([text])[0]
         probablities = self.best_model.predict_proba([text])[0]
@@ -100,7 +136,7 @@ class SentimentAnalyzer:
             'probabilities': dict(zip(self.best_model.classes_, probablities))
         }
     
-    def predict_sentimental_ollama(self, text, model_name='llama3.2:1b'):
+    def predict_sentimental_ollama(self, text, model_name='gpt-oss:20b'):
         """ Predict sentiment using Ollama API """
         if not self.best_model:
             raise ValueError("No model trained yet. Please train the model first.")

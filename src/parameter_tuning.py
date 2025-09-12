@@ -11,12 +11,12 @@ def tune_hyperparameters(X, y):
     param_gird = {
         "logestic_regression": {
             "classifier__C": [0.1, 1, 10, 100],
-            "classifier__panalty": ['l1', 'l2'],
-            "tfidf_max_features": [1000, 3000, 5000],
+            "classifier__penalty": ['l1', 'l2'],
+            "tidf__max_features": [1000, 3000, 5000],
         },
         "nave_bayes": {
             "classifier__alpha": [0.1, 0.5, 1.0, 2.0],
-            "tfidf_max_features": [1000, 3000, 5000],
+            "tidf__max_features": [1000, 3000, 5000],
         },
     }
 
@@ -38,7 +38,7 @@ def tune_hyperparameters(X, y):
             pipeline,
             param_grid=param_grid,
             scoring='accuracy',
-            cv=5,
+            cv=3,
             n_jobs=-1,
             verbose=1
         )
@@ -54,3 +54,9 @@ def tune_hyperparameters(X, y):
         print("-" * 50)
         
     return best_models
+
+def get_best_model(best_models):
+    """ Get the best model from the tuned models """
+    best_model_name = max(best_models, key=lambda k: best_models[k]['score'])
+    # return best_models[best_model_name]['model']
+    return best_model_name
