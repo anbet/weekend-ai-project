@@ -23,52 +23,17 @@ class SentimentAnalyzer:
 
     def load_sample_data(self):
         """ Load sample data for training """
-        positive = [
-        "I love this product, it works perfectly!",
-        "Excellent quality, highly recommend",
-        "Good value for money",
-        "Amazing experience, will buy again",
-        "Great support team, very helpful",
-        "Loved the packaging, very premium",
-        "Fast delivery and excellent service",
-        "Absolutely fantastic, exceeded expectations",
-        "Very satisfied with the purchase",
-        "Works like a charm, totally worth it",
-        ]
-        
-        negative = [
-            "This is terrible, waste of money",
-            "Poor customer service, very disappointed",
-            "Not what I expected, could be better",
-            "Horrible quality, avoid this",
-            "Worst experience ever, never again",
-            "Totally useless, don’t buy this",
-            "Extremely frustrating and disappointing",
-            "Cheap build quality, broke in a week",
-            "Waste of time and money",
-            "Support team never responds, awful",
-        ]
-        
-        neutral = [
-            "Average product, nothing special",
-            "Decent product, meets expectations",
-            "Just okay, nothing impressive",
-            "It’s fine, does the job",
-            "Neither good nor bad, just average",
-            "Quality is acceptable for the price",
-            "Not amazing but not terrible either",
-            "Satisfactory but nothing exceptional",
-            "Okay for temporary use",
-            "Serves the purpose, nothing more",
-        ]
-        
-        data = {
-            "text": positive + negative + neutral,
-            "sentiment": (["positive"] * len(positive)) + 
-                        (["negative"] * len(negative)) + 
-                        (["neutral"] * len(neutral))
-        }
-        return pd.DataFrame(data)
+        dataset = load_dataset("yelp_review_full")["train"]
+        df = dataset.to_pandas() # type: ignore
+
+        # Map numerical ratings to sentiment labels
+        sentiment_map = {1: 'negative', 2: 'negative', 3: 'neutral', 4: 'positive', 5: 'positive'}
+        df['sentiment'] = df['label'].map(sentiment_map) # type: ignore
+        df = df[['text', 'sentiment']] # type: ignore
+        df = df.dropna().reset_index(drop=True)
+        # Limit to 5000 samples for quicker training
+        df = df.sample(n=5000, random_state=42).reset_index(drop=True) # type: ignore
+        return df
     
     def train_models(self, df):
         """ Train multiple models on the dataset """
